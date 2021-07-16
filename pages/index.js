@@ -23,20 +23,60 @@ function ProfileSidebar(props) {
   )
 }
 
+function ProfileRelationsBox(props) {
+  let count = 0;
+  return (
+    <ProfileRelationsBoxWrapper>
+            <h2 className="smallTitle">
+              {props.title} ({props.items.length})
+            </h2>
+
+            <ul>
+              {props.items.map((item) => {
+                {count++};
+                if (count <= 6) {
+                  return (
+                    <li>
+                      <a href={item.image} key={item.image}>
+                        <img src={item.image} />
+                        <span>{item.title}</span>
+                      </a>
+                    </li>
+                  )
+                }
+                
+              })}
+            </ul>
+    </ProfileRelationsBoxWrapper>
+  )
+}
+
 export default function Home() {
-  const [pessoasFavoritas, setPessoasFavoritas] = useState([]);
+  const [followers, setfollowers] = useState([]);
+
+  const [communities, setCommunities] = useState([]);
+
 
   useEffect(() => {
     fetch('https://api.github.com/users/juunegreiros/followers')
     .then(response => response.json())
-    .then(data => data.map((user) => {
-      setPessoasFavoritas(arr => [...arr, `${user.login}`]);
-    }));
+    .then(function (data) {
+      const items = [];
+
+      data.map((user) => {
+        const follower = {
+        title: user.login,
+        image: user.avatar_url
+      };
+      items.push(follower);
+    })
+
+    console.log(items);
+    setfollowers([...followers, ...items]);
+    })
   }, [])
 
   const usuarioAleatorio = 'raisaspagnol';
-
-  let count = 0;
 
   return (
     <>
@@ -57,7 +97,18 @@ export default function Home() {
 
           <Box>
             <h2 className="subTitle">O que você deseja fazer?</h2>
-            <form onSubmit{function }>
+            <form onSubmit={function handleCreateCommunity(e) {
+              e.preventDefault();
+
+              const data = new FormData(e.target);
+
+              var community = {
+                title: data.get('title'),
+                image: data.get('image')
+              };
+              
+              setCommunities([...communities, community]);
+            }}>
               <div>
                 <input 
                   placeholder="Qual vai ser o nome da sua comunidade?" 
@@ -81,51 +132,9 @@ export default function Home() {
           </Box>
         </div>
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
-          <ProfileRelationsBoxWrapper>
-            <h2 className="smallTitle">
-              Pessoas da comunidade ({pessoasFavoritas.length})
-            </h2>
+          <ProfileRelationsBox title="Meus seguidores" items={followers} />
 
-            <ul>
-              {pessoasFavoritas.map((user) => {
-                {count++};
-                if (count <= 6) {
-                  return (
-                    <li>
-                      <a href={`/users/${user}`} key={user}>
-                        <img src={`https://github.com/${user}.png`} />
-                        <span>{user}</span>
-                      </a>
-                    </li>
-                  )
-                }
-                
-              })}
-            </ul>
-          </ProfileRelationsBoxWrapper>
-
-          <ProfileRelationsBoxWrapper>
-            <h2 className="smallTitle">
-              Minhas comunidades ({pessoasFavoritas.length})
-            </h2>
-
-            <ul>
-              {pessoasFavoritas.map((user) => {
-                {count++};
-                if (count <= 6) {
-                  return (
-                    <li>
-                      <a href={`/users/${user}`} key={user}>
-                        <img src={`https://github.com/${user}.png`} />
-                        <span>{user}</span>
-                      </a>
-                    </li>
-                  )
-                }
-                
-              })}
-            </ul>
-          </ProfileRelationsBoxWrapper>
+          <ProfileRelationsBox title="Minhas comunidades" items={communities} />
         </div>
       </MainGrid>
     </>
